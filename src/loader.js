@@ -8,14 +8,11 @@ const parseOptions = { sourceType: 'module', plugins: ['jsx'] };
 
 const importReactHotLoaderDeclaration = t.importDeclaration(
   [t.importSpecifier(t.identifier(reactHotLoaderIdentfierName), t.identifier('hot'))],
-  t.stringLiteral('react-hot-loader'),
+  t.stringLiteral('react-hot-loader')
 );
 
-function callHotModuleExpression(arguments) {
-  return t.callExpression(
-    t.callExpression(t.identifier('hot'), [t.identifier('module')]),
-    arguments,
-  );
+function callHotModuleExpression(args) {
+  return t.callExpression(t.callExpression(t.identifier('hot'), [t.identifier('module')]), args);
 }
 
 function isModuleExport(node) {
