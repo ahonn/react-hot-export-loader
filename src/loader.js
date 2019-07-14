@@ -27,7 +27,7 @@ function isModuleExport(node) {
   return false;
 }
 
-function ReactHotEntryLoader(source) {
+function ReactHotExportLoader(source) {
   if (process.env.NODE_ENV === 'production' || source === '') {
     return source;
   }
@@ -52,4 +52,4 @@ function ReactHotEntryLoader(source) {
   return code;
 }
 
-module.exports = ReactHotEntryLoader;
+module.exports = ReactHotExportLoader;
