@@ -1,9 +1,15 @@
 {
+  "name": "react-hot-export-loader",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ahonn/react-hot-export-loader.git",
+  "author": "ahonn <ahonn95@outlook.com>",
   "dependencies": {
     "@babel/generator": "^7.5.0",
     "@babel/parser": "^7.5.0",
     "@babel/traverse": "^7.5.0",
     "@babel/types": "^7.5.0",
     "acorn": "^6.2.0"
-  }
+  },
+  "license": "MIT"
 }
