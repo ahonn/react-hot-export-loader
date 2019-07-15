@@ -5,7 +5,6 @@ const t = require('@babel/types');
 const loaderUtils = require('loader-utils');
 
 const DEFAULT_IDENTIFIER = '__HOT__';
-const parseOptions = { sourceType: 'module', plugins: ['jsx'] };
 
 function isModuleExport(node) {
   if (t.isMemberExpression(node)) {
@@ -21,7 +20,7 @@ function isModuleExport(node) {
 
 function ReactHotExportLoader(source) {
   const options = loaderUtils.getOptions(this) || {};
-  const { identifier = DEFAULT_IDENTIFIER, filter } = options;
+  const { identifier = DEFAULT_IDENTIFIER, plugins = [], filter } = options;
 
   const isProductionEnv = () => process.env.NODE_ENV === 'production';
   const shouldSkip = () => typeof filter === 'function' && !filter(this);
@@ -30,7 +29,10 @@ function ReactHotExportLoader(source) {
     return source;
   }
 
-  const ast = parse(source, parseOptions);
+  const ast = parse(source, {
+    sourceType: 'module',
+    plugins: ['jsx', ...plugins],
+  });
 
   // insert `import { hot as ${identifier} } from 'react-hot-loader';`
   const importReactHotLoaderDeclaration = t.importDeclaration(
@@ -39,25 +41,76 @@ function ReactHotExportLoader(source) {
   );
   ast.program.body.unshift(importReactHotLoaderDeclaration);
 
+  const insertNodes = [];
   traverse(ast, {
-    // change `export default xxx` to `export default ${identifier}(module)(xxx)`
     ExportDefaultDeclaration: (path) => {
-      path.node.declaration = t.callExpression(
-        t.callExpression(t.identifier(identifier), [t.identifier('module')]),
-        [path.node.declaration]
-      );
+      const { declaration } = path.node;
+      // insert `export default ${identifier}(module)(xxx)`
+      if (t.isClassDeclaration(declaration) || t.isFunctionDeclaration(declaration)) {
+        if (t.isIdentifier(declaration.id)) {
+          path.replaceWith(declaration);
+          insertNodes.push(
+            t.ExportDefaultDeclaration(
+              t.callExpression(
+                t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+                [declaration.id]
+              )
+            )
+          );
+        }
+        return;
+      }
+
+      // change `export default xxx` to `export default ${identifier}(module)(xxx)`
+      if (t.isIdentifier(declaration)) {
+        path.node.declaration = t.callExpression(
+          t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+          [path.node.declaration]
+        );
+        return;
+      }
     },
-    // change `module.exports = xxx` to `module.exports = ${identifier}(module)(xxx)`
     ExpressionStatement: (path) => {
       const { expression } = path.node;
-      if (expression.operator === '=' && isModuleExport(expression.left)) {
-        path.node.expression.right = t.callExpression(
-          t.callExpression(t.identifier(identifier), [t.identifier('module')]),
-          [path.node.expression.right]
-        );
+      if (!t.isAssignmentExpression(expression)) {
+        return;
+      }
+
+      const { operator, left, right } = expression;
+      if (operator === '=' && isModuleExport(left)) {
+        // insert `module.exports = ${identifier}(module)(xxx)`
+        if (t.isClassExpression(right) || t.isFunctionExpression(right)) {
+          if (t.isIdentifier(right.id)) {
+            path.replaceWith(right);
+            insertNodes.push(
+              t.assignmentExpression(
+                '=',
+                t.memberExpression(t.identifier('module'), t.identifier('exports')),
+                t.callExpression(
+                  t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+                  [right.id]
+                )
+              )
+            );
+          }
+          return;
+        }
+
+        // change `module.exports = xxx` to `module.exports = ${identifier}(module)(xxx)`
+        if (t.isIdentifier(right)) {
+          path.node.expression.right = t.callExpression(
+            t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+            [right]
+          );
+          return;
+        }
       }
     },
   });
+
+  if (insertNodes.length > 0) {
+    ast.program.body.push(...insertNodes);
+  }
 
   const { code } = generate(ast);
   return code;

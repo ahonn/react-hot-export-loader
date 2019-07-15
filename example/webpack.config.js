@@ -15,7 +15,12 @@ module.exports = {
         exclude: /node_modules/,
         use: [
           'babel-loader',
-          require.resolve('../'),
+          {
+            loader: require.resolve('../'),
+            options: {
+              plugins: ['classProperties'],
+            },
+          },
         ],
       },
     ],

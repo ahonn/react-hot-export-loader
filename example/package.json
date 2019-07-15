@@ -19,6 +19,7 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.5.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-hot-loader": "^4.12.6"
