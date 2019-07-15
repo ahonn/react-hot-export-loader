@@ -6,6 +6,9 @@ const loaderUtils = require('loader-utils');
 
 const DEFAULT_IDENTIFIER = '__HOT__';
 
+const importReactLibrary = 0b01;
+const exportReactComponent = 0b10;
+
 function isModuleExport(node) {
   if (t.isMemberExpression(node)) {
     return (
@@ -34,15 +37,16 @@ function ReactHotExportLoader(source) {
     plugins: ['jsx', ...plugins],
   });
 
-  // insert `import { hot as ${identifier} } from 'react-hot-loader';`
-  const importReactHotLoaderDeclaration = t.importDeclaration(
-    [t.importSpecifier(t.identifier(identifier), t.identifier('hot'))],
-    t.stringLiteral('react-hot-loader')
-  );
-  ast.program.body.unshift(importReactHotLoaderDeclaration);
-
+  let status = 0;
   const insertNodes = [];
   traverse(ast, {
+    ImportDeclaration: (path) => {
+      const { source } = path.node;
+      if (t.isStringLiteral(source) && source.value === 'react') {
+        status |= importReactLibrary;
+      }
+    },
+
     ExportDefaultDeclaration: (path) => {
       const { declaration } = path.node;
       // insert `export default ${identifier}(module)(xxx)`
@@ -52,11 +56,12 @@ function ReactHotExportLoader(source) {
           insertNodes.push(
             t.ExportDefaultDeclaration(
               t.callExpression(
-                t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+                t.identifier(identifier),
                 [declaration.id]
               )
             )
           );
+          status |= exportReactComponent;
         }
         return;
       }
@@ -64,9 +69,10 @@ function ReactHotExportLoader(source) {
       // change `export default xxx` to `export default ${identifier}(module)(xxx)`
       if (t.isIdentifier(declaration)) {
         path.node.declaration = t.callExpression(
-          t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+          t.identifier(identifier),
           [path.node.declaration]
         );
+        status |= exportReactComponent;
         return;
       }
     },
@@ -87,11 +93,12 @@ function ReactHotExportLoader(source) {
                 '=',
                 t.memberExpression(t.identifier('module'), t.identifier('exports')),
                 t.callExpression(
-                  t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+                  t.identifier(identifier),
                   [right.id]
                 )
               )
             );
+            status |= exportReactComponent;
           }
           return;
         }
@@ -99,14 +106,30 @@ function ReactHotExportLoader(source) {
         // change `module.exports = xxx` to `module.exports = ${identifier}(module)(xxx)`
         if (t.isIdentifier(right)) {
           path.node.expression.right = t.callExpression(
-            t.callExpression(t.identifier(identifier), [t.identifier('module')]),
+            t.identifier(identifier),
             [right]
           );
+          status |= exportReactComponent;
           return;
         }
       }
     },
   });
+
+  // return origin source when not import react or export component
+  if (status !== (importReactLibrary | exportReactComponent)) {
+    return source;
+  }
+
+  ast.program.body.unshift(
+    // insert `import 'react-hot-loader';`
+    t.importDeclaration([], t.stringLiteral('react-hot-loader')),
+    // insert `import { hot as ${identifier} } from 'react-hot-loader/root';`
+    t.importDeclaration(
+      [t.importSpecifier(t.identifier(identifier), t.identifier('hot'))],
+      t.stringLiteral('react-hot-loader/root')
+    )
+  );
 
   if (insertNodes.length > 0) {
     ast.program.body.push(...insertNodes);
