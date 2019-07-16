@@ -6,9 +6,6 @@ const loaderUtils = require('loader-utils');
 
 const DEFAULT_IDENTIFIER = '__HOT__';
 
-const importReactLibrary = 0b01;
-const exportReactComponent = 0b10;
-
 function isModuleExport(node) {
   if (t.isMemberExpression(node)) {
     return (
@@ -37,13 +34,15 @@ function ReactHotExportLoader(source) {
     plugins: ['jsx', ...plugins],
   });
 
-  let status = 0;
+
+  let importReactLibrary = false;
+  let exportReactComponent = false;
   const insertNodes = [];
   traverse(ast, {
     ImportDeclaration: (path) => {
       const { source } = path.node;
       if (t.isStringLiteral(source) && source.value === 'react') {
-        status |= importReactLibrary;
+        importReactLibrary = true;
       }
     },
 
@@ -61,7 +60,7 @@ function ReactHotExportLoader(source) {
               )
             )
           );
-          status |= exportReactComponent;
+          exportReactComponent = true;
         }
         return;
       }
@@ -72,7 +71,7 @@ function ReactHotExportLoader(source) {
           t.identifier(identifier),
           [path.node.declaration]
         );
-        status |= exportReactComponent;
+        exportReactComponent = true;
         return;
       }
     },
@@ -98,7 +97,7 @@ function ReactHotExportLoader(source) {
                 )
               )
             );
-            status |= exportReactComponent;
+            exportReactComponent = true;
           }
           return;
         }
@@ -109,7 +108,7 @@ function ReactHotExportLoader(source) {
             t.identifier(identifier),
             [right]
           );
-          status |= exportReactComponent;
+          exportReactComponent = true;
           return;
         }
       }
@@ -117,7 +116,7 @@ function ReactHotExportLoader(source) {
   });
 
   // return origin source when not import react or export component
-  if (status !== (importReactLibrary | exportReactComponent)) {
+  if (!(importReactLibrary && exportReactComponent)) {
     return source;
   }
 
