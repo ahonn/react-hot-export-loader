@@ -43,9 +43,19 @@ module.exports = {
 };
 ```
 
+### How to run example
+```bash
+git clone git@github.com:ahonn/react-hot-export-loader.git
+cd react-hot-export-loader/example
+yarn install
+yarn run dev
+```
+
+open localhost://8080 in your browser
+
 ## Options
 
-#### identifier
+### identifier
 
 By default `react-hot-loader / root` exports the `hot` function as `__HOT__`, you can set the `identifier` option to modify the export name.
 
