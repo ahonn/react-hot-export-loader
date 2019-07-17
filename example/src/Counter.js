@@ -1,22 +1,15 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class Counter extends Component {
-  state = {
-    count: 0,
-  };
+const Counter = () => {
+  const [count, setCount] = React.setState(0);
 
-  render() {
-    const { count } = this.state;
-    const setCount = (newCount) => this.setState({ count: newCount });
-
-    return (
-      <div>
-        <p>count: {count}</p>
-        <button onClick={() => setCount(count + 1)}>+</button>
-        <button onClick={() => setCount(count - 1)}>-</button>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <p>count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>+</button>
+      <button onClick={() => setCount(count - 1)}>-</button>
+    </div>
+  );
+};
 
 export default Counter;
