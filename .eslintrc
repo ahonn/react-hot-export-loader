@@ -1,0 +1,31 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2017,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "browser": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "plugins": [
+    "babel"
+  ],
+  "rules": {
+    "max-len": [
+      2,
+      {
+        "code": 100,
+        "tabWidth": 2,
+        "ignoreUrls": true
+      }
+    ]
+  }
+}
