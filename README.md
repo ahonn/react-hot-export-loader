@@ -1,6 +1,7 @@
 # react-hot-export-loader
 
 ![version](https://img.shields.io/npm/v/react-hot-export-loader.svg)
+![download](https://img.shields.io/npm/dm/react-hot-export-loader.svg)
 ![coveralls](https://img.shields.io/coveralls/github/ahonn/react-hot-export-loader.svg)
 ![travis](https://img.shields.io/travis/com/ahonn/react-hot-export-loader.svg)
 ![license](https://img.shields.io/github/license/ahonn/react-hot-export-loader.svg)
