@@ -57,7 +57,7 @@ yarn install
 yarn run dev
 ```
 
-open localhost://8080 in your browser
+open [http://localhost:8080/](http://localhost:8080/) in your browser
 
 ## Options
 
