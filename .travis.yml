@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+  - 10
+branches:
+  only:
+  - master
+install: yarn install
+script:
+  - yarn run test
+after_success:
+  - yarn run coveralls
