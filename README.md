@@ -1,5 +1,10 @@
 # react-hot-export-loader
 
+![version](https://img.shields.io/npm/v/react-hot-export-loader.svg)
+![coveralls](https://img.shields.io/coveralls/github/ahonn/react-hot-export-loader.svg)
+![travis](https://img.shields.io/travis/com/ahonn/react-hot-export-loader.svg)
+![license](https://img.shields.io/github/license/ahonn/react-hot-export-loader.svg)
+
 A Webpack loader that automatically inserts react-hot-loader code, Inspired by [react-hot-loader-loader](https://github.com/NoamELB/react-hot-loader-loader)
 
 **Skip resources that are not exported to React components, do nothing when `process.env.NODE_ENV`**
