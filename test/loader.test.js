@@ -12,7 +12,6 @@ async function testLoaderFixture(fixture, options) {
 
   const output = modules[modules.length - 1].source;
   const correct = fs.readFileSync(path.join(fixture, 'output.js'), 'utf-8');
-  console.log(output);
   expect(format(output)).toBe(format(correct));
 }
 
