@@ -20,7 +20,7 @@
     "@babel/generator": "^7.5.0",
     "@babel/parser": "^7.5.0",
     "@babel/traverse": "^7.5.0",
-    "@babel/types": "^7.5.0",
+    "@babel/types": "^7.6.1",
     "loader-utils": "^1.2.3"
   },
   "devDependencies": {
